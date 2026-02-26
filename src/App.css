@@ -123,9 +123,7 @@
   margin-bottom: 28px;
 }
 
-.cm_nb_rp_bg_filter_tabs {
-  /* border-bottom: 1px solid var(--cm-border-light); */
-}
+
 
 .cm_nb_rp_bg_tabs_list {
   display: flex;
@@ -393,20 +391,22 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: #eeeeee;
+  background: #f0f0f0;
   border: none;
-  box-shadow: none;
   color: #333;
   cursor: pointer;
-  transition: all var(--cm-transition-fast);
+  transition: all 0.2s ease;
+  padding: 0;
 }
 
 .cm_nb_rp_bg_mini_arrow:hover:not(:disabled) {
-  background: #e2e2e2;
+  background: #e8e8e8;
+  color: #000;
+  transform: scale(1.05);
 }
 
 .cm_nb_rp_bg_mini_arrow:disabled {
-  opacity: 0.3;
+  opacity: 0.2;
   cursor: not-allowed;
 }
 

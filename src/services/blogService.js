@@ -1,16 +1,18 @@
 const storefrontToken = window.cm_nb_ra_in_bg_config?.token;
 
 /**
- * Build the GraphQL query string with the given tag filter.
+ * Build the GraphQL query string with the given tag filter and pagination.
  * @param {string} tagFilter - The tag to filter blog posts by.
+ * @param {number} first - Number of posts to fetch.
+ * @param {string} after - Cursor for the next set of results.
  * @returns {string} The GraphQL query string.
  */
-const buildQuery = (tagFilter) => `
+const buildQuery = (tagFilter, first, after) => `
   query MyQuery {
     site {
       content {
         blog {
-          posts(filters: {tags: "${tagFilter}"}) {
+          posts(filters: {tags: "${tagFilter}"}, first: ${first}${after ? `, after: "${after}"` : ''}) {
             edges {
               node {
                 name
@@ -22,6 +24,16 @@ const buildQuery = (tagFilter) => `
                 }
                 entityId
               }
+              cursor
+            }
+            pageInfo {
+              endCursor
+              hasNextPage
+              hasPreviousPage
+              startCursor
+            }
+            collectionInfo {
+              totalItems
             }
           }
         }
@@ -31,11 +43,13 @@ const buildQuery = (tagFilter) => `
 `;
 
 /**
- * Fetch blog posts from the GraphQL API filtered by tag.
+ * Fetch blog posts from the GraphQL API with pagination.
  * @param {string} tagFilter - The tag to filter blog posts by.
- * @returns {Promise<Array>} Array of blog post nodes.
+ * @param {number} first - Number of posts to fetch.
+ * @param {string} after - Cursor for pagination.
+ * @returns {Promise<Object>} Object containing nodes and pageInfo.
  */
-export const fetchBlogPosts = async (tagFilter) => {
+export const fetchBlogPosts = async (tagFilter, first = 10, after = null) => {
   try {
     const response = await fetch('/graphql', {
       method: 'POST',
@@ -45,7 +59,7 @@ export const fetchBlogPosts = async (tagFilter) => {
         'Authorization': 'Bearer ' + storefrontToken,
       },
       body: JSON.stringify({
-        query: buildQuery(tagFilter),
+        query: buildQuery(tagFilter, first, after),
       }),
     });
 
@@ -54,10 +68,18 @@ export const fetchBlogPosts = async (tagFilter) => {
     }
 
     const data = await response.json();
-    const edges = data?.data?.site?.content?.blog?.posts?.edges || [];
-    return edges.map((edge) => edge.node);
+    const postsData = data?.data?.site?.content?.blog?.posts;
+    const edges = postsData?.edges || [];
+    const pageInfo = postsData?.pageInfo || {};
+    const totalItems = postsData?.collectionInfo?.totalItems || 0;
+
+    return {
+      posts: edges.map((edge) => edge.node),
+      pageInfo,
+      totalItems
+    };
   } catch (error) {
     console.error('Error fetching blog posts:', error);
-    return [];
+    return { posts: [], pageInfo: {}, totalItems: 0 };
   }
 };

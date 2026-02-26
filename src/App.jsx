@@ -17,26 +17,35 @@ function App() {
   const [searchInput, setSearchInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [pageInfo, setPageInfo] = useState({});
+  const [totalItems, setTotalItems] = useState(0);
+  const [pageCursors, setPageCursors] = useState({ 1: null }); // Map page number to 'after' cursor
   const debounceRef = useRef(null);
+
+  const loadPosts = async (tag, pageNum, afterCursor = null) => {
+    setIsLoading(true);
+    const result = await fetchBlogPosts(tag, POSTS_PER_PAGE, afterCursor);
+    
+    setPosts(result.posts);
+    setPageInfo(result.pageInfo);
+    setTotalItems(result.totalItems);
+    setCurrentPage(pageNum);
+    
+    // If we have a next page, store its cursor for the next page number
+    if (result.pageInfo.hasNextPage) {
+      setPageCursors(prev => ({
+        ...prev,
+        [pageNum + 1]: result.pageInfo.endCursor
+      }));
+    }
+    
+    setIsLoading(false);
+  };
 
   // Fetch posts when tag changes
   useEffect(() => {
-    let cancelled = false;
-
-    const loadPosts = async () => {
-      setIsLoading(true);
-      const data = await fetchBlogPosts(activeTag);
-      if (!cancelled) {
-        setPosts(data);
-        setCurrentPage(1);
-        setIsLoading(false);
-      }
-    };
-
-    loadPosts();
-    return () => {
-      cancelled = true;
-    };
+    setPageCursors({ 1: null });
+    loadPosts(activeTag, 1, null);
   }, [activeTag]);
 
   // Debounced search - 300ms
@@ -44,12 +53,13 @@ function App() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setSearchQuery(searchInput);
-      setCurrentPage(1);
+      // Note: With server-side pagination, search should ideally be server-side.
+      // For now, we keep the client-side filtering on the current page's posts.
     }, 300);
     return () => clearTimeout(debounceRef.current);
   }, [searchInput]);
 
-  // Filter posts by search query (client-side)
+  // Filter posts by search query (client-side on current page results)
   const filteredPosts = useMemo(() => {
     if (!searchQuery.trim()) return posts;
     const q = searchQuery.toLowerCase();
@@ -60,42 +70,35 @@ function App() {
 
   // Pagination calculations
   const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE)),
-    [filteredPosts.length]
+    () => Math.max(1, Math.ceil(totalItems / POSTS_PER_PAGE)),
+    [totalItems]
   );
-
-  const paginatedPosts = useMemo(() => {
-    const start = (currentPage - 1) * POSTS_PER_PAGE;
-    return filteredPosts.slice(start, start + POSTS_PER_PAGE);
-  }, [filteredPosts, currentPage]);
 
   // Handlers
   const handleTagChange = useCallback((tag) => {
     setActiveTag(tag);
     setSearchInput('');
     setSearchQuery('');
-    setCurrentPage(1);
   }, []);
 
   const handleSearchClick = useCallback(() => {
     setSearchQuery(searchInput);
-    setCurrentPage(1);
   }, [searchInput]);
 
   const handlePageChange = useCallback(
     (page) => {
-      if (page >= 1 && page <= totalPages) {
-        setCurrentPage(page);
+      if (page >= 1 && page <= totalPages && page !== currentPage) {
+        const cursor = pageCursors[page];
+        loadPosts(activeTag, page, cursor);
       }
     },
-    [totalPages]
+    [totalPages, currentPage, activeTag, pageCursors]
   );
 
   const handleRestart = useCallback(() => {
     setActiveTag(DEFAULT_TAG);
     setSearchInput('');
     setSearchQuery('');
-    setCurrentPage(1);
   }, []);
 
   return (
@@ -144,7 +147,7 @@ function App() {
         </div>
 
         <section className="cm_nb_rp_bg_content">
-          <BlogGrid posts={paginatedPosts} isLoading={isLoading} />
+          <BlogGrid posts={filteredPosts} isLoading={isLoading} />
         </section>
 
         <footer className="cm_nb_rp_bg_footer">
