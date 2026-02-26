@@ -6,7 +6,7 @@ import Pagination from './components/Pagination';
 import { fetchBlogPosts } from './services/blogService';
 import './App.css';
 
-const POSTS_PER_PAGE = 8;
+const POSTS_PER_PAGE = window.cm_nb_ra_in_bg_config?.postsPerPage || 10;
 const configTabs = window.cm_nb_ra_in_bg_config?.tabs || [];
 const DEFAULT_TAG = configTabs.length > 0 ? configTabs[0].tag : '';
 
@@ -132,14 +132,14 @@ function App() {
                   if (e.key === 'Enter') handleSearchClick();
                 }}
               />
-              <button
-                id="cm_nb_rp_bg_search_btn"
-                className="cm_nb_rp_bg_search_btn"
-                onClick={handleSearchClick}
-              >
-                Search
-              </button>
             </div>
+            <button
+              id="cm_nb_rp_bg_search_btn"
+              className="cm_nb_rp_bg_search_btn"
+              onClick={handleSearchClick}
+            >
+              Search
+            </button>
           </div>
         </div>
 
@@ -153,28 +153,6 @@ function App() {
             totalPages={totalPages}
             onPageChange={handlePageChange}
           />
-
-          <button
-            id="cm_nb_rp_bg_restart_btn"
-            className="cm_nb_rp_bg_restart_btn"
-            onClick={handleRestart}
-            title="Reset filters and search"
-          >
-            <svg
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polyline points="23 4 23 10 17 10" />
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-            </svg>
-            <span>Restart</span>
-          </button>
         </footer>
       </div>
     </div>

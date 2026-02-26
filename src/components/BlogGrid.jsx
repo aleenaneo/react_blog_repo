@@ -31,10 +31,10 @@ const BlogGrid = ({ posts, isLoading }) => {
           <path d="M21 21l-4.35-4.35" />
           <path d="M8 11h6" />
         </svg>
-        <p className="cm_nb_rp_bg_empty_text">No products found</p>
-        <p className="cm_nb_rp_bg_empty_subtext">
+        <p className="cm_nb_rp_bg_empty_text">Not found</p>
+        {/* <p className="cm_nb_rp_bg_empty_subtext">
           Try adjusting your search or filter criteria
-        </p>
+        </p> */}
       </div>
     );
   }
