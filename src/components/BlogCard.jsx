@@ -36,7 +36,7 @@ const BlogCard = ({ post }) => {
           )}
         </div>
         <div className="cm_nb_rp_bg_card_info">
-          <h3 className="cm_nb_rp_bg_card_title">{post.name}</h3>
+          <h3 className="cm_nb_rp_bg_card_title">{post.name.split(' ')[0]}</h3>
         </div>
       </article>
     </a>
