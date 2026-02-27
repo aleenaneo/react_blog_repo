@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import Header from './components/Header';
+// import Header from './components/Header';
 import FilterTabs from './components/FilterTabs';
 import BlogGrid from './components/BlogGrid';
 import Pagination from './components/Pagination';
@@ -115,7 +115,7 @@ function App() {
     <div className="cm_nb_rp_bg_app">
       <div className="cm_nb_rp_bg_container">
         <div className="cm_nb_rp_bg_centered_wrapper">
-          <Header />
+          {/* <Header /> */}
           <div className="cm_nb_rp_bg_controls">
             <FilterTabs activeTag={activeTag} onTagChange={handleTagChange} />
             <div className="cm_nb_rp_bg_search_wrapper">
