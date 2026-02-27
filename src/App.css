@@ -191,38 +191,57 @@
    ============================================ */
 .cm_nb_rp_bg_content_full {
   min-height: 400px;
-  padding-left: 48px;
-  /* The requested gap on the left */
+  /* Align with the left gap of cm_nb_rp_bg_centered_wrapper */
+  padding-left: max(40px, calc((100vw - 1210px) / 2 + 40px));
   margin-bottom: 40px;
+  overflow: hidden;
+  /* Prevent horizontal scroll during slide animation */
 }
 
 .cm_nb_rp_bg_grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(200px, 1fr));
   gap: 20px;
-  animation: cm_nb_rp_bg_fadeIn 0.4s ease;
   width: 100%;
+  animation: cm_nb_rp_bg_slideIn 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, opacity;
 }
 
-/* Blurred state for upcoming posts (5th column) */
-.cm_nb_rp_bg_grid>*:nth-child(5n) {
-  filter: blur(8px);
-  opacity: 0.4;
-  pointer-events: none;
-  position: relative;
-  transition: all 0.5s ease;
+/* Blurred state for upcoming posts (5th column) - Only on Desktop */
+@media (min-width: 1101px) {
+  .cm_nb_rp_bg_grid>*:nth-child(5n) {
+    filter: blur(1px);
+    opacity: 1.4;
+    pointer-events: none;
+    position: relative;
+    transition: all 0.5s ease;
+  }
+
+  .cm_nb_rp_bg_grid>*:nth-child(5n)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
+    pointer-events: none;
+    border-radius: 12px;
+  }
 }
 
-.cm_nb_rp_bg_grid>*:nth-child(5n)::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
-  pointer-events: none;
-  border-radius: 12px;
+/* No global blur logic here anymore as it's moved to min-width query */
+
+@keyframes cm_nb_rp_bg_slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes cm_nb_rp_bg_fadeIn {
@@ -440,12 +459,23 @@
    RESPONSIVE DESIGN
    ============================================ */
 
-/* Large tablets / small desktop */
+/* Large tablets / small desktop (iPad Landscape and similar) */
 @media (max-width: 1100px) {
 
   .cm_nb_rp_bg_grid,
   .cm_nb_rp_bg_grid_loading {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Ensure no blur on tablet */
+  .cm_nb_rp_bg_grid>* {
+    filter: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .cm_nb_rp_bg_grid>*::after {
+    display: none !important;
   }
 }
 
@@ -507,10 +537,42 @@
     padding: 20px 16px 48px;
   }
 
+  .cm_nb_rp_bg_centered_wrapper {
+    padding: 0;
+  }
+
+  .cm_nb_rp_bg_content_full {
+    padding-left: 0;
+    margin-bottom: 32px;
+    overflow: visible;
+    -webkit-overflow-scrolling: auto;
+    scrollbar-width: auto;
+  }
+
+  .cm_nb_rp_bg_content_full::-webkit-scrollbar {
+    display: auto;
+  }
+
   .cm_nb_rp_bg_grid,
   .cm_nb_rp_bg_grid_loading {
+    display: grid;
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 20px;
+    width: 100%;
+    animation: cm_nb_rp_bg_fadeIn 0.4s ease;
+  }
+
+  .cm_nb_rp_bg_grid>*,
+  .cm_nb_rp_bg_grid_loading>* {
+    filter: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+  }
+
+  .cm_nb_rp_bg_grid>*::after,
+  .cm_nb_rp_bg_grid_loading>*::after {
+    display: none !important;
   }
 
   .cm_nb_rp_bg_title {
@@ -522,5 +584,11 @@
     right: 16px;
     padding: 8px 16px;
     font-size: 0.78rem;
+  }
+
+  .cm_nb_rp_bg_pagination_right {
+    display: flex;
+    justify-content: center;
+    width: 100%;
   }
 }

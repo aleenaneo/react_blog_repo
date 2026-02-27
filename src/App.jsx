@@ -158,7 +158,7 @@ function App() {
         </div>
 
         <section className="cm_nb_rp_bg_content_full">
-          <BlogGrid posts={currentVisiblePosts} isLoading={isLoading} />
+          <BlogGrid key={currentPage} posts={currentVisiblePosts} isLoading={isLoading} />
         </section>
 
         <div className="cm_nb_rp_bg_centered_wrapper">
