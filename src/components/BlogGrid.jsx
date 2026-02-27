@@ -1,9 +1,10 @@
 import BlogCard from './BlogCard';
 
-const BlogGrid = ({ posts, isLoading }) => {
+const BlogGrid = ({ posts, isLoading, isLastPage }) => {
   if (isLoading) {
+    // ... index 4 is the 5th card
     return (
-      <div className="cm_nb_rp_bg_grid_loading">
+      <div className={`cm_nb_rp_bg_grid_loading ${isLastPage ? 'cm_nb_rp_bg_grid_last' : ''}`}>
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="cm_nb_rp_bg_skeleton_card">
             <div className="cm_nb_rp_bg_skeleton_image" />
@@ -40,7 +41,7 @@ const BlogGrid = ({ posts, isLoading }) => {
   }
 
   return (
-    <div className="cm_nb_rp_bg_grid">
+    <div className={`cm_nb_rp_bg_grid ${isLastPage ? 'cm_nb_rp_bg_grid_last' : ''}`}>
       {posts.map((post) => (
         <BlogCard key={post.id} post={post} />
       ))}

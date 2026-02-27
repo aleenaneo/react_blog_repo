@@ -126,7 +126,7 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 28px;
-  padding-right: 48px;
+  /* padding-right: 48px; */
 }
 
 .cm_nb_rp_bg_tabs_list {
@@ -217,6 +217,13 @@
     transition: all 0.5s ease;
   }
 
+  /* Remove blur on Last Page */
+  .cm_nb_rp_bg_grid.cm_nb_rp_bg_grid_last>*:nth-child(5n) {
+    filter: none !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
   .cm_nb_rp_bg_grid>*:nth-child(5n)::after {
     content: '';
     position: absolute;
@@ -227,6 +234,10 @@
     background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
     pointer-events: none;
     border-radius: 12px;
+  }
+
+  .cm_nb_rp_bg_grid.cm_nb_rp_bg_grid_last>*:nth-child(5n)::after {
+    display: none !important;
   }
 }
 
@@ -492,10 +503,22 @@
 
   .cm_nb_rp_bg_search_wrapper {
     width: 100%;
+    display: flex;
+    flex-direction: row;
+    /* Ensure it stays as a row */
+    gap: 8px;
   }
 
   .cm_nb_rp_bg_search_container {
-    width: 100%;
+    flex: 1;
+    width: auto;
+    min-width: 0;
+    /* Allow shrinking */
+  }
+
+  .cm_nb_rp_bg_search_btn {
+    padding: 0 20px;
+    font-size: 0.9rem;
   }
 
   .cm_nb_rp_bg_grid,
@@ -551,6 +574,22 @@
 
   .cm_nb_rp_bg_content_full::-webkit-scrollbar {
     display: auto;
+  }
+
+  .cm_nb_rp_bg_search_wrapper {
+    width: 100%;
+    flex-direction: row;
+    /* Force row on smallest screens */
+  }
+
+  .cm_nb_rp_bg_search_container {
+    height: 44px;
+    /* Slightly smaller on mobile */
+  }
+
+  .cm_nb_rp_bg_search_btn {
+    height: 44px;
+    padding: 0 16px;
   }
 
   .cm_nb_rp_bg_grid,
