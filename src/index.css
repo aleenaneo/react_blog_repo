@@ -11,17 +11,17 @@
 
 :root {
   /* Colors */
-  --cm-bg-primary: #ffffff;
+  /* --cm-bg-primary: #ffffff; */
   --cm-bg-secondary: #f8f9fb;
-  --cm-bg-card: #ffffff;
-  --cm-text-primary: #1a1a2e;
+  /* --cm-bg-card: #ffffff; */
+  /* --cm-text-primary: #1a1a2e; */
   --cm-text-secondary: #6b7280;
   --cm-text-muted: #9ca3af;
   --cm-border: #e5e7eb;
-  --cm-border-light: #f0f0f5;
-  --cm-accent: #7c3aed;
+  /* --cm-border-light: #f0f0f5; */
+  /* --cm-accent: #7c3aed;
   --cm-accent-dark: #6d28d9;
-  --cm-accent-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  --cm-accent-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); */
   --cm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
   --cm-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
   --cm-shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.12);
@@ -36,21 +36,6 @@
   --cm-transition-fast: 0.15s ease;
   --cm-transition: 0.25s ease;
   --cm-transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-html {
-  font-size: 16px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    Oxygen, Ubuntu, sans-serif;
-  background: var(--cm-bg-secondary);
-  color: var(--cm-text-primary);
-  line-height: 1.6;
-  min-height: 100vh;
 }
 
 #cm_nb_ra_bg_root {
