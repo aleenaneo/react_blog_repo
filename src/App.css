@@ -286,10 +286,10 @@
   padding-bottom: 20px;
 }
 
-.cm_nb_rp_bg_card:hover {
+/* .cm_nb_rp_bg_card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-}
+} */
 
 .cm_nb_rp_bg_card_image_wrapper {
   width: 100%;
@@ -310,9 +310,9 @@
   padding: 20px;
 }
 
-.cm_nb_rp_bg_card:hover .cm_nb_rp_bg_card_image {
+/* .cm_nb_rp_bg_card:hover .cm_nb_rp_bg_card_image {
   transform: scale(1.05);
-}
+} */
 
 .cm_nb_rp_bg_card_placeholder {
   display: flex;

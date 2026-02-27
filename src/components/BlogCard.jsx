@@ -36,7 +36,11 @@ const BlogCard = ({ post }) => {
           )}
         </div>
         <div className="cm_nb_rp_bg_card_info">
-          <h3 className="cm_nb_rp_bg_card_title">{post.name.split(' ')[0]}</h3>
+          <h3 className="cm_nb_rp_bg_card_title">
+            {window.cm_nb_ra_in_bg_config?.postsShowName
+              ? post.name.split(' ')[0]
+              : post.name}
+          </h3>
         </div>
       </article>
     </a>
