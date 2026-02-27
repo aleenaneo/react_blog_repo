@@ -7,9 +7,15 @@
 }
 
 .cm_nb_rp_bg_container {
-  max-width: 1200px;
+  max-width: 100%;
+  padding: 40px 0 60px 0;
+  overflow-x: hidden;
+}
+
+.cm_nb_rp_bg_centered_wrapper {
+  max-width: 1210px;
   margin: 0 auto;
-  padding: 40px 32px 60px;
+  padding: 0 40px;
 }
 
 /* ============================================
@@ -27,7 +33,6 @@
   letter-spacing: -0.02em;
   line-height: 1.2;
   margin-bottom: 6px;
-  font-style: italic;
 }
 
 .cm_nb_rp_bg_subtitle {
@@ -121,9 +126,8 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 28px;
+  padding-right: 48px;
 }
-
-
 
 .cm_nb_rp_bg_tabs_list {
   display: flex;
@@ -185,18 +189,40 @@
 /* ============================================
    BLOG GRID
    ============================================ */
-.cm_nb_rp_bg_content {
+.cm_nb_rp_bg_content_full {
   min-height: 400px;
+  padding-left: 48px;
+  /* The requested gap on the left */
+  margin-bottom: 40px;
 }
 
 .cm_nb_rp_bg_grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(5, minmax(200px, 1fr));
+  gap: 20px;
   animation: cm_nb_rp_bg_fadeIn 0.4s ease;
-  /* Create the fade/blur effect on the right edge */
-  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
-  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  width: 100%;
+}
+
+/* Blurred state for upcoming posts (5th column) */
+.cm_nb_rp_bg_grid>*:nth-child(5n) {
+  filter: blur(8px);
+  opacity: 0.4;
+  pointer-events: none;
+  position: relative;
+  transition: all 0.5s ease;
+}
+
+.cm_nb_rp_bg_grid>*:nth-child(5n)::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.8));
+  pointer-events: none;
+  border-radius: 12px;
 }
 
 @keyframes cm_nb_rp_bg_fadeIn {

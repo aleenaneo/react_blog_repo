@@ -1,4 +1,5 @@
 const storefrontToken = window.cm_nb_ra_in_bg_config?.token;
+const POSTS_DISPLAY_COUNT = window.cm_nb_ra_in_bg_config?.postsDisplayCount || 20;
 
 /**
  * Build the GraphQL query string with the given tag filter and pagination.
@@ -49,7 +50,7 @@ const buildQuery = (tagFilter, first, after) => `
  * @param {string} after - Cursor for pagination.
  * @returns {Promise<Object>} Object containing nodes and pageInfo.
  */
-export const fetchBlogPosts = async (tagFilter, first = 10, after = null) => {
+export const fetchBlogPosts = async (tagFilter, first = POSTS_DISPLAY_COUNT, after = null) => {
   try {
     const response = await fetch('/graphql', {
       method: 'POST',

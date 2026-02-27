@@ -7,72 +7,76 @@ import { fetchBlogPosts } from './services/blogService';
 import './App.css';
 
 const POSTS_PER_PAGE = window.cm_nb_ra_in_bg_config?.postsPerPage || 10;
+const POSTS_DISPLAY_COUNT = window.cm_nb_ra_in_bg_config?.postsDisplayCount || 20;
 const configTabs = window.cm_nb_ra_in_bg_config?.tabs || [];
 const DEFAULT_TAG = configTabs.length > 0 ? configTabs[0].tag : '';
-
 function App() {
-  const [posts, setPosts] = useState([]);
+  const [allPosts, setAllPosts] = useState([]);
   const [activeTag, setActiveTag] = useState(DEFAULT_TAG);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [pageInfo, setPageInfo] = useState({});
   const [totalItems, setTotalItems] = useState(0);
-  const [pageCursors, setPageCursors] = useState({ 1: null }); // Map page number to 'after' cursor
   const debounceRef = useRef(null);
+  const [endCursor, setEndCursor] = useState(null);
+  const [hasNextPage, setHasNextPage] = useState(false);
 
-  const loadPosts = async (tag, pageNum, afterCursor = null) => {
+  const loadPosts = async (tag, cursor = null, isAppending = false) => {
     setIsLoading(true);
-    const result = await fetchBlogPosts(tag, POSTS_PER_PAGE, afterCursor);
+    const result = await fetchBlogPosts(tag, POSTS_DISPLAY_COUNT, cursor);
     
-    setPosts(result.posts);
-    setPageInfo(result.pageInfo);
-    setTotalItems(result.totalItems);
-    setCurrentPage(pageNum);
-    
-    // If we have a next page, store its cursor for the next page number
-    if (result.pageInfo.hasNextPage) {
-      setPageCursors(prev => ({
-        ...prev,
-        [pageNum + 1]: result.pageInfo.endCursor
-      }));
+    if (isAppending) {
+      setAllPosts(prev => [...prev, ...result.posts]);
+    } else {
+      setAllPosts(result.posts);
     }
     
+    setTotalItems(result.totalItems);
+    setEndCursor(result.pageInfo.endCursor);
+    setHasNextPage(result.pageInfo.hasNextPage);
     setIsLoading(false);
   };
 
   // Fetch posts when tag changes
   useEffect(() => {
-    setPageCursors({ 1: null });
-    loadPosts(activeTag, 1, null);
+    setCurrentPage(1);
+    setAllPosts([]);
+    loadPosts(activeTag, null, false);
   }, [activeTag]);
 
-  // Debounced search - 300ms
+  // Debounced search
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setSearchQuery(searchInput);
-      // Note: With server-side pagination, search should ideally be server-side.
-      // For now, we keep the client-side filtering on the current page's posts.
+      setCurrentPage(1);
     }, 300);
     return () => clearTimeout(debounceRef.current);
   }, [searchInput]);
 
-  // Filter posts by search query (client-side on current page results)
+  // Filter posts by search query (client-side)
   const filteredPosts = useMemo(() => {
-    if (!searchQuery.trim()) return posts;
+    if (!searchQuery.trim()) return allPosts;
     const q = searchQuery.toLowerCase();
-    return posts.filter((post) =>
+    return allPosts.filter((post) =>
       post.name.toLowerCase().includes(q)
     );
-  }, [posts, searchQuery]);
+  }, [allPosts, searchQuery]);
 
-  // Pagination calculations
-  const totalPages = useMemo(
-    () => Math.max(1, Math.ceil(totalItems / POSTS_PER_PAGE)),
-    [totalItems]
-  );
+  // Sliding logic
+  const SHIFT_COUNT = POSTS_PER_PAGE - 2;
+  
+  const currentVisiblePosts = useMemo(() => {
+    const start = (currentPage - 1) * SHIFT_COUNT;
+    return filteredPosts.slice(start, start + POSTS_PER_PAGE);
+  }, [filteredPosts, currentPage, SHIFT_COUNT]);
+
+  // Calculate total slides based on totalItems from server
+  const totalSlides = useMemo(() => {
+    if (totalItems <= POSTS_PER_PAGE) return 1;
+    return Math.ceil((totalItems - POSTS_PER_PAGE) / SHIFT_COUNT) + 1;
+  }, [totalItems, SHIFT_COUNT]);
 
   // Handlers
   const handleTagChange = useCallback((tag) => {
@@ -83,83 +87,93 @@ function App() {
 
   const handleSearchClick = useCallback(() => {
     setSearchQuery(searchInput);
+    setCurrentPage(1);
   }, [searchInput]);
 
   const handlePageChange = useCallback(
     (page) => {
-      if (page >= 1 && page <= totalPages && page !== currentPage) {
-        const cursor = pageCursors[page];
-        loadPosts(activeTag, page, cursor);
+      if (page >= 1 && page <= totalSlides) {
+        // If we are moving forward and the required data is not loaded yet
+        const requiredCount = (page - 1) * SHIFT_COUNT + POSTS_PER_PAGE;
+        if (page > currentPage && filteredPosts.length < requiredCount && hasNextPage) {
+          loadPosts(activeTag, endCursor, true);
+        }
+        setCurrentPage(page);
       }
     },
-    [totalPages, currentPage, activeTag, pageCursors]
+    [totalSlides, currentPage, filteredPosts.length, hasNextPage, endCursor, activeTag, SHIFT_COUNT]
   );
 
   const handleRestart = useCallback(() => {
     setActiveTag(DEFAULT_TAG);
     setSearchInput('');
     setSearchQuery('');
+    setCurrentPage(1);
   }, []);
 
   return (
     <div className="cm_nb_rp_bg_app">
       <div className="cm_nb_rp_bg_container">
-        <Header />
-
-        <div className="cm_nb_rp_bg_controls">
-          <FilterTabs activeTag={activeTag} onTagChange={handleTagChange} />
-          <div className="cm_nb_rp_bg_search_wrapper">
-            <div className="cm_nb_rp_bg_search_container">
-              <svg
-                className="cm_nb_rp_bg_search_icon"
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+        <div className="cm_nb_rp_bg_centered_wrapper">
+          <Header />
+          <div className="cm_nb_rp_bg_controls">
+            <FilterTabs activeTag={activeTag} onTagChange={handleTagChange} />
+            <div className="cm_nb_rp_bg_search_wrapper">
+              <div className="cm_nb_rp_bg_search_container">
+                <svg
+                  className="cm_nb_rp_bg_search_icon"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="8" />
+                  <path d="M21 21l-4.35-4.35" />
+                </svg>
+                <input
+                  id="cm_nb_rp_bg_search_input"
+                  type="text"
+                  className="cm_nb_rp_bg_search_input"
+                  placeholder="Search for Support"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSearchClick();
+                  }}
+                />
+              </div>
+              <button
+                id="cm_nb_rp_bg_search_btn"
+                className="cm_nb_rp_bg_search_btn"
+                onClick={handleSearchClick}
               >
-                <circle cx="11" cy="11" r="8" />
-                <path d="M21 21l-4.35-4.35" />
-              </svg>
-              <input
-                id="cm_nb_rp_bg_search_input"
-                type="text"
-                className="cm_nb_rp_bg_search_input"
-                placeholder="Search for Support"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleSearchClick();
-                }}
-              />
+                Search
+              </button>
             </div>
-            <button
-              id="cm_nb_rp_bg_search_btn"
-              className="cm_nb_rp_bg_search_btn"
-              onClick={handleSearchClick}
-            >
-              Search
-            </button>
           </div>
         </div>
 
-        <section className="cm_nb_rp_bg_content">
-          <BlogGrid posts={filteredPosts} isLoading={isLoading} />
+        <section className="cm_nb_rp_bg_content_full">
+          <BlogGrid posts={currentVisiblePosts} isLoading={isLoading} />
         </section>
 
-        <footer className="cm_nb_rp_bg_footer">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-        </footer>
+        <div className="cm_nb_rp_bg_centered_wrapper">
+          <footer className="cm_nb_rp_bg_footer">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalSlides}
+              onPageChange={handlePageChange}
+            />
+          </footer>
+        </div>
       </div>
     </div>
   );
 }
+
 
 export default App;
